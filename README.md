@@ -157,3 +157,14 @@ Follow-Up / Intervention Logging
 2. **Explainability**: Every surfaced student must clearly display the underlying evidence (e.g. attendance decline, missing assignments, lower exam scores).
 3. **No Imputation as Zero**: Missing data is never treated as zero performance. Missing or insufficient records are explicitly flagged.
 4. **Decoupled Architecture**: All data processing and risk logic reside in `src/`, separated from the `app/` presentation layer.
+
+---
+
+## 8. Team Git Workflow & Collaboration Standards
+
+For our 3-member team implementing the 50 discrete concepts:
+- **Branching Model**: `main` (production), `develop` (staging), and isolated `feature/<id>-<description>` branches.
+- **Commit Format**: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`).
+- **Pull Requests**: Every concept requires a PR using the standardized [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) and at least 1 peer approval.
+- **Detailed Guide**: Refer to [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) for full branch conventions, role assignments, and merge policies.
+
