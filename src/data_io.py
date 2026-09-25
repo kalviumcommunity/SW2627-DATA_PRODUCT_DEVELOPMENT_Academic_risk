@@ -153,3 +153,92 @@ def load_from_sqlite(query: str, db_path: Union[str, Path]) -> pd.DataFrame:
         msg = f"Failed to execute query on SQLite DB '{path}': {exc}"
         logger.error(msg)
         raise DataLoadError(msg) from exc
+
+
+def load_json(file_path: Union[str, Path], **kwargs: Any) -> pd.DataFrame:
+    """Load a JSON file into a pandas DataFrame with error handling and logging.
+
+    Args:
+        file_path: Path to the target JSON file.
+        **kwargs: Additional keyword arguments passed to pd.read_json.
+
+    Returns:
+        pd.DataFrame containing the loaded data.
+
+    Raises:
+        DataLoadError: If the file does not exist, is unreadable, or parsing fails.
+    """
+    import json
+
+    path = Path(file_path)
+    if not path.exists():
+        msg = f"JSON file not found at path: {path}"
+        logger.error(msg)
+        raise DataLoadError(msg)
+
+    if not path.is_file():
+        msg = f"Path is not a regular file: {path}"
+        logger.error(msg)
+        raise DataLoadError(msg)
+
+    try:
+        try:
+            df = pd.read_json(path, **kwargs)
+        except Exception:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                df = pd.DataFrame(data)
+            elif isinstance(data, dict):
+                try:
+                    df = pd.DataFrame(data)
+                except ValueError:
+                    df = pd.DataFrame([data])
+            else:
+                raise ValueError(f"Unsupported JSON root type: {type(data).__name__}")
+
+        logger.info("Loaded JSON '%s' successfully (%d rows, %d columns)", path.name, len(df), len(df.columns))
+        return df
+    except Exception as exc:
+        msg = f"Failed to load JSON file '{path}': {exc}"
+        logger.error(msg)
+        raise DataLoadError(msg) from exc
+
+
+def save_json(
+    df: pd.DataFrame,
+    file_path: Union[str, Path],
+    orient: str = "records",
+    indent: int = 2,
+    **kwargs: Any,
+) -> Path:
+    """Save a pandas DataFrame to a formatted JSON file.
+
+    Args:
+        df: Pandas DataFrame to persist.
+        file_path: Target destination path.
+        orient: Format of JSON output ('records', 'split', 'index', etc.). Defaults to 'records'.
+        indent: Indentation spaces for pretty printing. Defaults to 2.
+        **kwargs: Additional keyword arguments passed to df.to_json.
+
+    Returns:
+        Path to the saved JSON file.
+
+    Raises:
+        DataSaveError: If saving the DataFrame fails.
+    """
+    if not isinstance(df, pd.DataFrame):
+        msg = f"Expected pandas DataFrame to save, got: {type(df).__name__}"
+        logger.error(msg)
+        raise DataSaveError(msg)
+
+    path = Path(file_path)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_json(path, orient=orient, indent=indent, **kwargs)
+        logger.info("Saved JSON to '%s' successfully (%d rows, %d columns)", path, len(df), len(df.columns))
+        return path
+    except Exception as exc:
+        msg = f"Failed to save JSON file to '{path}': {exc}"
+        logger.error(msg)
+        raise DataSaveError(msg) from exc

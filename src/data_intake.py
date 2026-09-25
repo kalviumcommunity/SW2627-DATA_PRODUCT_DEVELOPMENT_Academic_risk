@@ -1,11 +1,11 @@
-"""Academic dataset intake and validation layer for core entities."""
+"""Academic dataset intake and validation layer for core entities (CSV & JSON)."""
 
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import pandas as pd
 
-from src.data_io import load_csv
+from src.data_io import load_csv, load_json
 from src.data_transformer import standardize_column_names
 from src.exceptions import DataValidationError
 from src.logger import get_logger
@@ -13,7 +13,7 @@ from src.logger import get_logger
 logger = get_logger("academic_risk.data_intake")
 
 # Supported file extensions for dataset intake
-SUPPORTED_FORMATS: Set[str] = {".csv"}
+SUPPORTED_FORMATS: Set[str] = {".csv", ".json"}
 
 # Canonical schemas and allowed column aliases for the 7 core entities
 ENTITY_SCHEMAS: Dict[str, Dict[str, Any]] = {
@@ -70,35 +70,35 @@ class ValidationResult:
 
 
 def validate_dataset_file(
-    file_path: Union[str, Path],
+    file_path: Union[str, Path, pd.DataFrame],
     entity_name: str,
     supported_formats: Optional[Set[str]] = None,
 ) -> Tuple[Optional[pd.DataFrame], ValidationResult]:
-    """Validate a single academic dataset file for structural conformity.
+    """Validate an academic dataset (file or DataFrame) for structural conformity.
 
     Performs:
-    1. File existence and type check
-    2. Supported extension format check
+    1. Entity schema check
+    2. File existence and supported format check (.csv, .json)
     3. Non-empty file check (>0 bytes)
-    4. CSV parsing and row/column count check
-    5. Required columns check against the entity schema (including alias mapping)
+    4. Dataset parsing (CSV or JSON)
+    5. Row and column presence checks
+    6. Column name normalization and alias resolution against canonical schema
 
     Args:
-        file_path: Path to dataset file.
+        file_path: Path to dataset file (CSV/JSON) or existing pandas DataFrame.
         entity_name: Target entity name (students, courses, attendance, etc.).
-        supported_formats: Allowed file extensions. Defaults to {'.csv'}.
+        supported_formats: Allowed file extensions. Defaults to {'.csv', '.json'}.
 
     Returns:
         Tuple of (Loaded DataFrame or None, ValidationResult).
     """
-    path = Path(file_path)
-    formats = supported_formats or SUPPORTED_FORMATS
     clean_entity = entity_name.strip().lower()
+    formats = supported_formats or SUPPORTED_FORMATS
 
     result = ValidationResult(
         entity_name=clean_entity,
         is_valid=False,
-        file_path=str(path),
+        file_path=str(file_path) if not isinstance(file_path, pd.DataFrame) else "in_memory_dataframe",
     )
 
     # 1. Verify entity schema is defined
@@ -109,60 +109,66 @@ def validate_dataset_file(
         logger.error(result.errors[-1])
         return None, result
 
-    # 2. Verify file existence
-    if not path.exists():
-        result.errors.append(f"File not found: '{path}'")
-        logger.error(result.errors[-1])
-        return None, result
+    # 2. Extract DataFrame from file or in-memory object
+    if isinstance(file_path, pd.DataFrame):
+        df = file_path.copy()
+    else:
+        path = Path(file_path)
+        if not path.exists():
+            result.errors.append(f"File not found: '{path}'")
+            logger.error(result.errors[-1])
+            return None, result
 
-    if not path.is_file():
-        result.errors.append(f"Path is not a regular file: '{path}'")
-        logger.error(result.errors[-1])
-        return None, result
+        if not path.is_file():
+            result.errors.append(f"Path is not a regular file: '{path}'")
+            logger.error(result.errors[-1])
+            return None, result
 
-    # 3. Verify supported format
-    if path.suffix.lower() not in formats:
-        result.errors.append(
-            f"Unsupported file format '{path.suffix}'. Supported formats are: {sorted(list(formats))}"
-        )
-        logger.error(result.errors[-1])
-        return None, result
+        if path.suffix.lower() not in formats:
+            result.errors.append(
+                f"Unsupported file format '{path.suffix}'. Supported formats are: {sorted(list(formats))}"
+            )
+            logger.error(result.errors[-1])
+            return None, result
 
-    # 4. Verify file is not empty (0 bytes)
-    if path.stat().st_size == 0:
-        result.errors.append(f"File is completely empty (0 bytes): '{path}'")
-        logger.error(result.errors[-1])
-        return None, result
+        if path.stat().st_size == 0:
+            result.errors.append(f"File is completely empty (0 bytes): '{path}'")
+            logger.error(result.errors[-1])
+            return None, result
 
-    # 5. Parse dataset file
-    try:
-        df = load_csv(path)
-    except Exception as exc:
-        result.errors.append(f"Failed to parse CSV file: {exc}")
-        logger.error(result.errors[-1])
-        return None, result
+        try:
+            if path.suffix.lower() == ".csv":
+                df = load_csv(path)
+            elif path.suffix.lower() == ".json":
+                df = load_json(path)
+            else:
+                result.errors.append(f"No parser available for format: '{path.suffix}'")
+                return None, result
+        except Exception as exc:
+            result.errors.append(f"Failed to parse dataset file: {exc}")
+            logger.error(result.errors[-1])
+            return None, result
 
-    # 6. Verify row and column structure
+    # 3. Verify row and column structure
     result.row_count = len(df)
     result.column_count = len(df.columns)
 
     if result.row_count == 0:
-        result.errors.append(f"Dataset has no data rows (empty dataset): '{path}'")
+        result.errors.append(f"Dataset has no data rows (empty dataset): '{file_path}'")
         logger.error(result.errors[-1])
         return None, result
 
     if result.column_count == 0:
-        result.errors.append(f"Dataset has no columns: '{path}'")
+        result.errors.append(f"Dataset has no columns: '{file_path}'")
         logger.error(result.errors[-1])
         return None, result
 
-    # 7. Normalize columns and check aliases
+    # 4. Normalize columns and check aliases
     df_std = standardize_column_names(df)
     schema = ENTITY_SCHEMAS[clean_entity]
     required_cols = schema["required_columns"]
     aliases = schema.get("aliases", {})
 
-    # Apply aliases if original required column is absent but alias is present
     rename_map = {}
     for alias, canonical in aliases.items():
         if alias in df_std.columns and canonical not in df_std.columns:
@@ -183,21 +189,22 @@ def validate_dataset_file(
         logger.error(result.errors[-1])
         return None, result
 
-    # Validation passed
     result.is_valid = True
     logger.info("Successfully validated entity '%s' (%d rows, %d cols)", clean_entity, result.row_count, result.column_count)
     return df_std, result
 
 
 def load_and_validate_entity(
-    file_path: Union[str, Path],
-    entity_name: str,
+    source: Optional[Union[str, Path, pd.DataFrame]] = None,
+    entity_name: str = "",
+    file_path: Optional[Union[str, Path, pd.DataFrame]] = None,
 ) -> Tuple[pd.DataFrame, ValidationResult]:
     """Validate and load a single academic entity dataset, raising if invalid.
 
     Args:
-        file_path: Path to dataset file.
+        source: Path to dataset file or DataFrame.
         entity_name: Entity name (students, courses, etc.).
+        file_path: Alternative alias for source parameter.
 
     Returns:
         Tuple of (Loaded DataFrame, ValidationResult).
@@ -205,24 +212,67 @@ def load_and_validate_entity(
     Raises:
         DataValidationError: If validation fails.
     """
-    df, result = validate_dataset_file(file_path=file_path, entity_name=entity_name)
-    if not result.is_valid:
+    target = file_path if file_path is not None else source
+    if target is None:
+        raise DataValidationError("Either source or file_path must be provided.")
+
+    df, result = validate_dataset_file(file_path=target, entity_name=entity_name)
+    if not result.is_valid or df is None:
         raise DataValidationError(f"Intake validation failed for '{entity_name}': {'; '.join(result.errors)}")
     return df, result
 
 
+# ---------------------------------------------------------------------------
+# Dedicated entity loading functions for students, courses, enrollments, etc.
+# ---------------------------------------------------------------------------
+
+def load_students(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate student records from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="students")
+
+
+def load_courses(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate course records from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="courses")
+
+
+def load_enrollments(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate student course enrollments from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="enrollments")
+
+
+def load_attendance(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate student attendance records from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="attendance")
+
+
+def load_assignments(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate course assignments from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="assignments")
+
+
+def load_submissions(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate assignment submissions from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="submissions")
+
+
+def load_exams(source: Union[str, Path, pd.DataFrame]) -> Tuple[pd.DataFrame, ValidationResult]:
+    """Load and validate student exam scores from CSV, JSON, or DataFrame."""
+    return load_and_validate_entity(source=source, entity_name="exams")
+
+
+# ---------------------------------------------------------------------------
+# Batch Dataset Ingestion Function
+# ---------------------------------------------------------------------------
+
 def load_and_validate_academic_dataset(
-    data_source: Union[str, Path, Dict[str, Union[str, Path]]],
+    data_source: Union[str, Path, Dict[str, Union[str, Path, pd.DataFrame]]],
     strict: bool = True,
 ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, ValidationResult]]:
-    """Ingest and validate all 7 academic entities.
-
-    Accepts either:
-    - A directory path containing CSV files (e.g. data/raw/ containing students.csv, courses.csv, etc.)
-    - A dictionary mapping entity names to file paths.
+    """Ingest and validate all 7 academic entities from CSV or JSON sources.
 
     Args:
-        data_source: Directory path or dict of entity -> filepath.
+        data_source: Directory path or dict of entity -> (filepath or DataFrame).
         strict: If True, raises DataValidationError if ANY entity is missing or invalid.
 
     Returns:
@@ -235,33 +285,42 @@ def load_and_validate_academic_dataset(
     results: Dict[str, ValidationResult] = {}
     required_entities = list(ENTITY_SCHEMAS.keys())
 
-    # Build entity -> filepath map
-    entity_paths: Dict[str, Path] = {}
+    # Build entity -> source map
+    entity_sources: Dict[str, Union[Path, pd.DataFrame]] = {}
     if isinstance(data_source, (str, Path)):
         source_dir = Path(data_source)
         for entity in required_entities:
-            # Look for exact entity.csv or entitys.csv
-            possible_path = source_dir / f"{entity}.csv"
-            entity_paths[entity] = possible_path
+            # Check for entity.csv, then entity.json
+            csv_path = source_dir / f"{entity}.csv"
+            json_path = source_dir / f"{entity}.json"
+            if csv_path.exists():
+                entity_sources[entity] = csv_path
+            elif json_path.exists():
+                entity_sources[entity] = json_path
+            else:
+                entity_sources[entity] = csv_path  # default expected for reporting
     elif isinstance(data_source, dict):
-        entity_paths = {k.strip().lower(): Path(v) for k, v in data_source.items()}
+        entity_sources = {
+            k.strip().lower(): v if isinstance(v, pd.DataFrame) else Path(v)
+            for k, v in data_source.items()
+        }
     else:
         raise DataValidationError(f"Expected directory path or dictionary, got: {type(data_source).__name__}")
 
     # Validate each entity
     for entity in required_entities:
-        path = entity_paths.get(entity)
-        if not path or not path.exists():
+        source_item = entity_sources.get(entity)
+        if source_item is None or (isinstance(source_item, Path) and not source_item.exists()):
             res = ValidationResult(
                 entity_name=entity,
                 is_valid=False,
-                file_path=str(path) if path else None,
-                errors=[f"Dataset file missing for entity '{entity}': expected '{path}'"],
+                file_path=str(source_item) if source_item is not None else None,
+                errors=[f"Dataset file missing for entity '{entity}': expected '{source_item}'"],
             )
             results[entity] = res
             continue
 
-        df, res = validate_dataset_file(file_path=path, entity_name=entity)
+        df, res = validate_dataset_file(file_path=source_item, entity_name=entity)
         results[entity] = res
         if df is not None and res.is_valid:
             datasets[entity] = df
