@@ -47,6 +47,7 @@ class TestProjectEnvironment(unittest.TestCase):
             self.base_dir / "pyproject.toml",
             self.base_dir / "docs" / "GIT_WORKFLOW.md",
             self.base_dir / ".github" / "PULL_REQUEST_TEMPLATE.md",
+            self.base_dir / "docs" / "DATA_DICTIONARY.md",
         ]
 
         for file_path in expected_files:
