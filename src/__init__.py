@@ -27,6 +27,13 @@ from src.data_transformer import (
     cast_column_types,
     drop_exact_duplicates,
 )
+from src.data_intake import (
+    ENTITY_SCHEMAS,
+    ValidationResult,
+    validate_dataset_file,
+    load_and_validate_entity,
+    load_and_validate_academic_dataset,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -48,4 +55,9 @@ __all__ = [
     "convert_to_datetime",
     "cast_column_types",
     "drop_exact_duplicates",
+    "ENTITY_SCHEMAS",
+    "ValidationResult",
+    "validate_dataset_file",
+    "load_and_validate_entity",
+    "load_and_validate_academic_dataset",
 ]
