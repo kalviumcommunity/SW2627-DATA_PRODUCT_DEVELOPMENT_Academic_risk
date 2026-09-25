@@ -145,6 +145,23 @@ from src.datetime_pipeline import (
     calculate_submission_latency,
     transform_academic_datetimes,
 )
+from src.outlier_detection import (
+    OutlierMethod,
+    OutlierTreatment,
+    ColumnOutlierSummary,
+    AcademicOutlierReport,
+    BatchOutlierReport,
+    compute_iqr_bounds,
+    compute_zscore_bounds,
+    compute_modified_zscore_bounds,
+    detect_column_outliers,
+    detect_attendance_outliers,
+    detect_assignment_score_outliers,
+    detect_exam_score_outliers,
+    detect_submission_delay_outliers,
+    analyze_and_treat_outliers,
+    detect_academic_outliers,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -268,4 +285,19 @@ __all__ = [
     "transform_intervention_dates",
     "calculate_submission_latency",
     "transform_academic_datetimes",
+    "OutlierMethod",
+    "OutlierTreatment",
+    "ColumnOutlierSummary",
+    "AcademicOutlierReport",
+    "BatchOutlierReport",
+    "compute_iqr_bounds",
+    "compute_zscore_bounds",
+    "compute_modified_zscore_bounds",
+    "detect_column_outliers",
+    "detect_attendance_outliers",
+    "detect_assignment_score_outliers",
+    "detect_exam_score_outliers",
+    "detect_submission_delay_outliers",
+    "analyze_and_treat_outliers",
+    "detect_academic_outliers",
 ]
