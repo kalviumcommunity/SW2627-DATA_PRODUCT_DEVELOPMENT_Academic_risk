@@ -178,6 +178,13 @@ from src.data_consistency import (
     validate_entity_consistency,
     validate_academic_consistency,
 )
+from src.multi_source_merge import (
+    MergeAuditReport,
+    aggregate_attendance_by_course,
+    aggregate_submissions_by_course,
+    aggregate_exams_by_course,
+    integrate_academic_data,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -330,4 +337,9 @@ __all__ = [
     "validate_enrollment_relationships",
     "validate_entity_consistency",
     "validate_academic_consistency",
+    "MergeAuditReport",
+    "aggregate_attendance_by_course",
+    "aggregate_submissions_by_course",
+    "aggregate_exams_by_course",
+    "integrate_academic_data",
 ]
