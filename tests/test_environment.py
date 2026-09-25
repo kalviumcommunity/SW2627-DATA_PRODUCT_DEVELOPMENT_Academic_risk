@@ -45,6 +45,8 @@ class TestProjectEnvironment(unittest.TestCase):
             self.base_dir / ".gitignore",
             self.base_dir / "README.md",
             self.base_dir / "pyproject.toml",
+            self.base_dir / "docs" / "GIT_WORKFLOW.md",
+            self.base_dir / ".github" / "PULL_REQUEST_TEMPLATE.md",
         ]
 
         for file_path in expected_files:
