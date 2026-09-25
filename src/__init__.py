@@ -59,6 +59,15 @@ from src.data_dictionary import (
     get_field_spec,
     get_data_dictionary_dataframe,
 )
+from src.missing_values import (
+    MissingValueReport,
+    detect_missing_values,
+    handle_attendance_missing_values,
+    handle_exams_missing_values,
+    handle_submissions_missing_values,
+    handle_demographics_missing_values,
+    handle_academic_missing_values,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -106,4 +115,11 @@ __all__ = [
     "get_entity_fields",
     "get_field_spec",
     "get_data_dictionary_dataframe",
+    "MissingValueReport",
+    "detect_missing_values",
+    "handle_attendance_missing_values",
+    "handle_exams_missing_values",
+    "handle_submissions_missing_values",
+    "handle_demographics_missing_values",
+    "handle_academic_missing_values",
 ]
