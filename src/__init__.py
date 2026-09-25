@@ -193,6 +193,21 @@ from src.feature_engineering import (
     engineer_student_features,
     generate_feature_dictionary_markdown,
 )
+from src.numpy_calculations import (
+    vectorized_curve_scores,
+    vectorized_score_to_gpa,
+    vectorized_clip_scores,
+    vectorized_linear_slope,
+    vectorized_batch_linear_slopes,
+    vectorized_momentum,
+    vectorized_zscore_normalize,
+    vectorized_minmax_normalize,
+    vectorized_robust_scale,
+    vectorized_percentile_rank,
+    vectorized_attendance_rates,
+    vectorized_weighted_average,
+    vectorized_composite_risk_score,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -356,4 +371,17 @@ __all__ = [
     "calculate_student_exam_features",
     "engineer_student_features",
     "generate_feature_dictionary_markdown",
+    "vectorized_curve_scores",
+    "vectorized_score_to_gpa",
+    "vectorized_clip_scores",
+    "vectorized_linear_slope",
+    "vectorized_batch_linear_slopes",
+    "vectorized_momentum",
+    "vectorized_zscore_normalize",
+    "vectorized_minmax_normalize",
+    "vectorized_robust_scale",
+    "vectorized_percentile_rank",
+    "vectorized_attendance_rates",
+    "vectorized_weighted_average",
+    "vectorized_composite_risk_score",
 ]
