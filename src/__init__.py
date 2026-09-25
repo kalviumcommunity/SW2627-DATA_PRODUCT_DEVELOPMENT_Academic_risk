@@ -52,6 +52,13 @@ from src.data_profiling import (
     profile_academic_dataset,
     profile_academic_database,
 )
+from src.data_dictionary import (
+    ACADEMIC_DATA_DICTIONARY,
+    get_data_dictionary,
+    get_entity_fields,
+    get_field_spec,
+    get_data_dictionary_dataframe,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -94,4 +101,9 @@ __all__ = [
     "profile_dataset",
     "profile_academic_dataset",
     "profile_academic_database",
+    "ACADEMIC_DATA_DICTIONARY",
+    "get_data_dictionary",
+    "get_entity_fields",
+    "get_field_spec",
+    "get_data_dictionary_dataframe",
 ]
