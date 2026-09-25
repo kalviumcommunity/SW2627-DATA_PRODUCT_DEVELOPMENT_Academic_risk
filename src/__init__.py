@@ -162,6 +162,22 @@ from src.outlier_detection import (
     analyze_and_treat_outliers,
     detect_academic_outliers,
 )
+from src.data_consistency import (
+    APPROVED_ATTENDANCE_STATUSES,
+    ConsistencyIssue,
+    EntityConsistencyReport,
+    AcademicConsistencyReport,
+    validate_scores_range,
+    validate_attendance_range,
+    validate_approved_attendance_statuses,
+    validate_dates_logical,
+    validate_submission_timing_logic,
+    validate_id_format,
+    validate_referential_integrity,
+    validate_enrollment_relationships,
+    validate_entity_consistency,
+    validate_academic_consistency,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -300,4 +316,18 @@ __all__ = [
     "detect_submission_delay_outliers",
     "analyze_and_treat_outliers",
     "detect_academic_outliers",
+    "APPROVED_ATTENDANCE_STATUSES",
+    "ConsistencyIssue",
+    "EntityConsistencyReport",
+    "AcademicConsistencyReport",
+    "validate_scores_range",
+    "validate_attendance_range",
+    "validate_approved_attendance_statuses",
+    "validate_dates_logical",
+    "validate_submission_timing_logic",
+    "validate_id_format",
+    "validate_referential_integrity",
+    "validate_enrollment_relationships",
+    "validate_entity_consistency",
+    "validate_academic_consistency",
 ]
