@@ -133,6 +133,18 @@ from src.string_cleaner import (
     clean_exams_strings,
     clean_academic_strings,
 )
+from src.datetime_pipeline import (
+    AcademicCalendar,
+    DEFAULT_ACADEMIC_CALENDAR,
+    derive_date_features,
+    transform_attendance_dates,
+    transform_assignment_dates,
+    transform_submission_dates,
+    transform_exam_dates,
+    transform_intervention_dates,
+    calculate_submission_latency,
+    transform_academic_datetimes,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -246,4 +258,14 @@ __all__ = [
     "clean_submissions_strings",
     "clean_exams_strings",
     "clean_academic_strings",
+    "AcademicCalendar",
+    "DEFAULT_ACADEMIC_CALENDAR",
+    "derive_date_features",
+    "transform_attendance_dates",
+    "transform_assignment_dates",
+    "transform_submission_dates",
+    "transform_exam_dates",
+    "transform_intervention_dates",
+    "calculate_submission_latency",
+    "transform_academic_datetimes",
 ]
