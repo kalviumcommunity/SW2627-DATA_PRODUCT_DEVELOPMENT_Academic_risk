@@ -185,6 +185,14 @@ from src.multi_source_merge import (
     aggregate_exams_by_course,
     integrate_academic_data,
 )
+from src.feature_engineering import (
+    FEATURE_DEFINITIONS,
+    calculate_student_attendance_features,
+    calculate_student_assignment_features,
+    calculate_student_exam_features,
+    engineer_student_features,
+    generate_feature_dictionary_markdown,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -342,4 +350,10 @@ __all__ = [
     "aggregate_submissions_by_course",
     "aggregate_exams_by_course",
     "integrate_academic_data",
+    "FEATURE_DEFINITIONS",
+    "calculate_student_attendance_features",
+    "calculate_student_assignment_features",
+    "calculate_student_exam_features",
+    "engineer_student_features",
+    "generate_feature_dictionary_markdown",
 ]
