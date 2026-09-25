@@ -10,7 +10,9 @@ from src.exceptions import (
 from src.logger import get_logger
 from src.data_io import (
     load_csv,
+    load_json,
     save_csv,
+    save_json,
     save_to_sqlite,
     load_from_sqlite,
 )
@@ -33,6 +35,13 @@ from src.data_intake import (
     validate_dataset_file,
     load_and_validate_entity,
     load_and_validate_academic_dataset,
+    load_students,
+    load_courses,
+    load_enrollments,
+    load_attendance,
+    load_assignments,
+    load_submissions,
+    load_exams,
 )
 
 __all__ = [
@@ -43,7 +52,9 @@ __all__ = [
     "DataSaveError",
     "get_logger",
     "load_csv",
+    "load_json",
     "save_csv",
+    "save_json",
     "save_to_sqlite",
     "load_from_sqlite",
     "inspect_dataframe",
@@ -60,4 +71,11 @@ __all__ = [
     "validate_dataset_file",
     "load_and_validate_entity",
     "load_and_validate_academic_dataset",
+    "load_students",
+    "load_courses",
+    "load_enrollments",
+    "load_attendance",
+    "load_assignments",
+    "load_submissions",
+    "load_exams",
 ]
