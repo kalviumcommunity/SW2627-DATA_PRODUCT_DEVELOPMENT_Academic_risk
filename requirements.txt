@@ -1,0 +1,8 @@
+# Academic Engagement Risk Dashboard - Dependencies
+# Tech Stack: Python, Pandas, NumPy, SQLite (built-in), Plotly, Streamlit
+
+pandas>=2.2.0
+numpy>=2.0.0
+plotly>=5.20.0
+streamlit>=1.35.0
+pytest>=8.0.0
