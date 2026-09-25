@@ -88,6 +88,23 @@ from src.data_standardizer import (
     standardize_interventions,
     standardize_academic_dataset,
 )
+from src.duplicate_detection import (
+    DEFAULT_BUSINESS_KEYS,
+    DuplicateMetrics,
+    DuplicateReport,
+    BatchDuplicateReport,
+    resolve_business_keys,
+    compute_duplicate_metrics,
+    detect_duplicates,
+    clean_duplicates,
+    deduplicate_students,
+    deduplicate_courses,
+    deduplicate_attendance,
+    deduplicate_assignments,
+    deduplicate_submissions,
+    deduplicate_exams,
+    deduplicate_academic_dataset,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -160,4 +177,19 @@ __all__ = [
     "standardize_exams",
     "standardize_interventions",
     "standardize_academic_dataset",
+    "DEFAULT_BUSINESS_KEYS",
+    "DuplicateMetrics",
+    "DuplicateReport",
+    "BatchDuplicateReport",
+    "resolve_business_keys",
+    "compute_duplicate_metrics",
+    "detect_duplicates",
+    "clean_duplicates",
+    "deduplicate_students",
+    "deduplicate_courses",
+    "deduplicate_attendance",
+    "deduplicate_assignments",
+    "deduplicate_submissions",
+    "deduplicate_exams",
+    "deduplicate_academic_dataset",
 ]
