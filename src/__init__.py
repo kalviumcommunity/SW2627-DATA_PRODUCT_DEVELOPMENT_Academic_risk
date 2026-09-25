@@ -43,6 +43,15 @@ from src.data_intake import (
     load_submissions,
     load_exams,
 )
+from src.data_profiling import (
+    ColumnProfile,
+    DatasetProfile,
+    AcademicQualityReport,
+    profile_column,
+    profile_dataset,
+    profile_academic_dataset,
+    profile_academic_database,
+)
 
 __all__ = [
     "DataProcessingError",
@@ -78,4 +87,11 @@ __all__ = [
     "load_assignments",
     "load_submissions",
     "load_exams",
+    "ColumnProfile",
+    "DatasetProfile",
+    "AcademicQualityReport",
+    "profile_column",
+    "profile_dataset",
+    "profile_academic_dataset",
+    "profile_academic_database",
 ]
